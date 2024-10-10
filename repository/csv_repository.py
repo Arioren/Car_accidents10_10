@@ -38,7 +38,7 @@ def init_car_accident():
             query['count'] = 1
             days_sum.insert_one(query)
         else:
-            days_sum.update_one(query, {'$set': {'count': day['count'] + 1}})
+            days_sum.update_one(query, {'$inc': {'count': 1}})
 
         query = {'date': {'month': row['CRASH_DATE'].month, 'year': row['CRASH_DATE'].year}, 'region': row['BEAT_OF_OCCURRENCE']}
         month = month_sum.find_one(query)
@@ -46,17 +46,7 @@ def init_car_accident():
             query['count'] = 1
             month_sum.insert_one(query)
         else:
-            month_sum.update_one(query, {'$set': {'count': month['count'] + 1}})
-
-        # day = days_sum.find_one({'date': row['CRASH_DATE']})
-        # if day is None:
-        #     days_sum.insert_one({'date': row['CRASH_DATE'], 'count': 1})
-        # else:
-        #     days_sum.update_one({'date': row['CRASH_DATE']}, {'$set': {'count': day['count'] + 1}})
-
-        # month = month_sum.find_one({'date': {'month': row['CRASH_DATE'].month, 'year': row['CRASH_DATE'].year}})
-        # if month is None:
-
+            month_sum.update_one(query, {'$inc': {'count': 1}})
 
 def safe_int(value):
     try:
