@@ -22,3 +22,24 @@ def count_by_region_week(region, period):
 def count_by_region_month(region, period):
     res = month_sum.find_one({'region': region, 'date':period})
     return 0 if res is None else res['count']
+
+
+def group_by_main_cause(region):
+    res = my_collection.aggregate([
+        {'$match': {'region': region}},
+        {'$group': {'_id': '$main_cause', 'count': {'$sum': 1},'total injury': {'$sum': '$injuries.total' }, 'fatal': {'$sum': '$injuries.fatal' } }},
+        {'$sort': {'fatal': -1}}
+    ])
+    return list(res)
+
+def statistics_by_region(region):
+    res = my_collection.aggregate([
+        {'$match': {'region': region}},
+        {'$project': {'_id': 0}},
+        {'$group': {'_id': '$region',
+                    'total injury': {'$sum': '$injuries.total' },
+                    'fatal': {'$sum': '$injuries.fatal' },
+                    'non_fatal': {'$sum': '$injuries.non_fatal' },
+                    'all accidents': {'$push':'$$ROOT'}}}
+    ])
+    return list(res)

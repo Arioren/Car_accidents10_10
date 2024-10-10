@@ -2,7 +2,8 @@ from dataclasses import asdict
 
 from flask import Blueprint, request, jsonify
 
-from repository.accident_repo import count_by_region, count_by_region_day, count_by_region_week, count_by_region_month
+from repository.accident_repo import count_by_region, count_by_region_day, count_by_region_week, count_by_region_month, \
+    group_by_main_cause, statistics_by_region
 from repository.csv_repository import init_car_accident
 
 end_points = Blueprint('end_points', __name__)
@@ -33,8 +34,14 @@ def region_period(type, region):
 
     return jsonify({'region_period': res})
 
-# # Accidents are grouped according to the main cause of the accident:
-# @end_points.route('/main_cause/<string:main_cause', methods=['GET'])
-#
+# Accidents are grouped according to the main cause of the accident:
+@end_points.route('/main_cause/<string:region>', methods=['GET'])
+def main_cause(region):
+    res = group_by_main_cause(region)
+    return jsonify(res)
+
 # Statistics on injuries by region:
-# @end_points.route('/injuries/<string:region>', methods=['GET'])
+@end_points.route('/injuries/<string:region>', methods=['GET'])
+def injuries(region):
+    res = statistics_by_region(region)
+    return jsonify(res)
