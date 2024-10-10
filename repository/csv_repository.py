@@ -14,7 +14,7 @@ def init_car_accident():
    my_collection.drop()
    days_sum.drop()
    month_sum.drop()
-
+   x = 0
    for row in read_csv(os.path.join(os.path.dirname(__file__), '..', 'data', 'Traffic_Crashes_-_Crashes - 20k rows.csv')):
 
         row['CRASH_DATE'] = row['CRASH_DATE'][:10]
@@ -32,21 +32,15 @@ def init_car_accident():
         }
         my_collection.insert_one(accident)
 
-        query = {'date': row['CRASH_DATE'], 'region': row['BEAT_OF_OCCURRENCE']}
-        day = days_sum.find_one(query)
-        if day is None:
-            query['count'] = 1
-            days_sum.insert_one(query)
-        else:
-            days_sum.update_one(query, {'$inc': {'count': 1}})
+        query_day = {'date': row['CRASH_DATE'], 'region': row['BEAT_OF_OCCURRENCE']}
+        update_day = {'$inc': {'count': 1}}
+        days_sum.update_one(query_day, update_day, upsert=True)
 
-        query = {'date': {'month': row['CRASH_DATE'].month, 'year': row['CRASH_DATE'].year}, 'region': row['BEAT_OF_OCCURRENCE']}
-        month = month_sum.find_one(query)
-        if month is None:
-            query['count'] = 1
-            month_sum.insert_one(query)
-        else:
-            month_sum.update_one(query, {'$inc': {'count': 1}})
+        query_month = {'date.month': row['CRASH_DATE'].month, 'date.year': row['CRASH_DATE'].year,
+                       'region': row['BEAT_OF_OCCURRENCE']}
+        update_month = {'$inc': {'count': 1}}
+        month_sum.update_one(query_month, update_month, upsert=True)
+
 
 def safe_int(value):
     try:
