@@ -11,11 +11,14 @@ def read_csv(csv_path):
 
 
 def init_car_accident():
-   my_collection.drop()
-   days_sum.drop()
-   month_sum.drop()
-   x = 0
-   for row in read_csv(os.path.join(os.path.dirname(__file__), '..', 'data', 'Traffic_Crashes_-_Crashes - 20k rows.csv')):
+    my_collection.drop()
+    days_sum.drop()
+    month_sum.drop()
+    # my_collection.create_index([("region", 1)])
+
+    insert_many_accidents = []
+
+    for row in read_csv(os.path.join(os.path.dirname(__file__), '..', 'data', 'Traffic_Crashes_-_Crashes.csv')):
 
         row['CRASH_DATE'] = row['CRASH_DATE'][:10]
         row['CRASH_DATE'] = datetime.strptime(row['CRASH_DATE'], '%m/%d/%Y')
@@ -30,15 +33,20 @@ def init_car_accident():
                'non_fatal': safe_int(row['INJURIES_TOTAL']) - safe_int(row['INJURIES_FATAL'])
            }
         }
-        my_collection.insert_one(accident)
+        insert_many_accidents.append(accident)
+        if len(insert_many_accidents) == 1000:
+            my_collection.insert_many(insert_many_accidents)
+            insert_many_accidents = []
 
         query_day = {'date': row['CRASH_DATE'], 'region': row['BEAT_OF_OCCURRENCE']}
         update_day = {'$inc': {'count': 1}}
+
         days_sum.update_one(query_day, update_day, upsert=True)
 
         query_month = {'date.month': row['CRASH_DATE'].month, 'date.year': row['CRASH_DATE'].year,
                        'region': row['BEAT_OF_OCCURRENCE']}
         update_month = {'$inc': {'count': 1}}
+
         month_sum.update_one(query_month, update_month, upsert=True)
 
 
