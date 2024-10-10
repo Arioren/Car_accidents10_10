@@ -1,5 +1,8 @@
+from dataclasses import asdict
+
 from flask import Blueprint, request, jsonify
 
+from repository.accident_repo import count_by_region
 from repository.csv_repository import init_car_accident
 
 end_points = Blueprint('end_points', __name__)
@@ -10,9 +13,12 @@ def initialization():
     init_car_accident()
     return jsonify({'status': True})
 
-# # Total accidents by region:
-# @end_points.route('/region/<string:region>', methods=['GET'])
-#
+# Total accidents by region:
+@end_points.route('/region/<string:region>', methods=['GET'])
+def region(region):
+    res = count_by_region(region)
+    return jsonify({region: res})
+
 # #Total accidents by region and by period
 # @end_points.route('/region_period/<string:region>/<string:period>', methods=['GET'])
 #
